@@ -1,8 +1,10 @@
-from pymem import Pymem,process,exception
-import requests
+from pymem import Pymem
+from pymem.exception import ProcessNotFound,MemoryReadError
+from pymem.process import module_from_name
+from requests import get
 
 try:
-    r = requests.get("https://raw.githubusercontent.com/frk1/hazedumper/master/csgo.json").json()
+    r = get("https://raw.githubusercontent.com/frk1/hazedumper/master/csgo.json").json()
     offsets = {"dwEntityList": r['signatures']['dwEntityList'],
                "dwGlowObjectManager": r['signatures']['dwGlowObjectManager'],
                "m_iGlowIndex": r['netvars']['m_iGlowIndex'],
@@ -11,7 +13,7 @@ try:
 
     processName='csgo.exe'
     pm = Pymem(processName)
-    client = process.module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
+    client = module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
 
     print("Diamond has launched.")
 
@@ -38,8 +40,8 @@ try:
 
                 pm.write_int(gMPEGM38 + 0x24, 1)           # Enable glow
 
-except exception.ProcessNotFound:
-    print("error: couldn't find process",processName)
+except (ProcessNotFound,MemoryReadError):
+    print("error: couldn't find process",processName,"or process has been closed")
 
         
         
